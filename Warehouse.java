@@ -5,17 +5,19 @@ public class Warehouse implements Serializable {
     private static final long serialVersionUID  = 1L;
     private ProductList productList;
     private ClientList clientList;
+    private SupplierList supplierList;
     private static Warehouse warehouse;
     private Warehouse() {
         productList = ProductList.instance();
         clientList = ClientList.instance();
+        supplierList = SupplierList.instance();
     }
 
     public static Warehouse instance() {
         if (warehouse == null) {
             ClientIDServer.instance(); // instantiate all singletons
             ProductIDServer.instance(); // instantiate all singletons
-            // SupplierIDServer.instance(); // instantiate all singletons
+            SupplierIDServer.instance(); // instantiate all singletons
             return (warehouse = new Warehouse());
         }
         else {
@@ -39,12 +41,24 @@ public class Warehouse implements Serializable {
         return null;
     }
 
+    public Supplier addSupplier(String name, String address, String phone) {
+        Supplier supplier = new Supplier(name, address, phone);
+        if (supplierList.insertSupplier(supplier)) {
+            return (supplier);
+        }
+        return null;
+    }
+
     public Iterator getProducts() {
         return productList.getProducts();
     }
 
     public Iterator getClients() {
         return clientList.getClients();
+    }
+
+    public Iterator getSuppliers() {
+        return supplierList.getSuppliers();
     }
 
     public static Warehouse retrieve() {
@@ -54,7 +68,7 @@ public class Warehouse implements Serializable {
             input.readObject();
             ClientIDServer.retrieve(input);
             ProductIDServer.retrieve(input);
-            // SupplierIDServerf.retrieve(input);
+            SupplierIDServer.retrieve(input);
             return warehouse;
         }
         catch(IOException ioe) {

@@ -145,7 +145,15 @@ public class UserInterface {
     }
 
     public void addSupplier() {
-        System.out.println("NEED TO IMPLEMENT!");
+        String name = getToken("Enter supplier company: ");
+        String address = getToken("Enter address: ");
+        String phone = getToken("Enter phone: ");
+        Supplier result;
+        result = warehouse.addSupplier(name, address, phone);
+        if (result == null) {
+            System.out.println("Supplier could not be added.");
+        }
+        System.out.println(result);
     }
 
     public void assignProduct() {
@@ -168,8 +176,12 @@ public class UserInterface {
         }
     }
 
-    public void showSupplies() {
-        System.out.println("NEED TO IMPLEMENT!");
+    public void showSuppliers() {
+        Iterator allSuppliers = warehouse.getSuppliers();
+        while (allSuppliers.hasNext()) {
+            Supplier Supplier = (Supplier)(allSuppliers.next());
+            System.out.println(Supplier.toString());
+        }
     }
 
     private void save() {
@@ -213,7 +225,7 @@ public class UserInterface {
                 break;
                 case SHOW_PRODUCTS:     showProducts();
                 break;
-                case SHOW_SUPPLIERS:    showSupplies();
+                case SHOW_SUPPLIERS:    showSuppliers();
                 break;
                 case SAVE:              save();
                 break;
