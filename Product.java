@@ -8,8 +8,11 @@ public class Product implements Serializable {
     private String quantity;
     private String price;
     private String id;
+    private List productSuppliers = new LinkedList();
     private static final String PRODUCT_STRING = "P";
 
+    // NOTE: Final design won't have the contructor list quantity, this comes from
+    //       shipments in development stage 2.
     public Product(String prodName, String quantity, String price) {
         this.prodName = prodName;
         this.quantity = quantity;
@@ -31,6 +34,21 @@ public class Product implements Serializable {
 
     public String getID() {
         return id;
+    }
+
+    // Used to check equality in searching
+    public boolean equals(String id) {
+        return this.id.equals(id);
+    }
+
+    // Assign relationship between products and suppliers.
+    public boolean link(Supplier supplier) {
+        return productSuppliers.add(supplier) ? true : false;
+    }
+
+    // Unassign relationship between products and suppliers.
+    public boolean unlink(Supplier supplier) {
+        return productSuppliers.remove(supplier) ? true : false;
     }
 
     public String toString() {

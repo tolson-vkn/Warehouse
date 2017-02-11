@@ -7,17 +7,20 @@ public class Warehouse implements Serializable {
     private ClientList clientList;
     private SupplierList supplierList;
     private static Warehouse warehouse;
+
+    // Instantiate the lists of objects.
     private Warehouse() {
-        productList = ProductList.instance();
-        clientList = ClientList.instance();
+        productList  = ProductList.instance();
+        clientList   = ClientList.instance();
         supplierList = SupplierList.instance();
     }
 
+    // Get the server singleton instantiations.
     public static Warehouse instance() {
         if (warehouse == null) {
-            ClientIDServer.instance(); // instantiate all singletons
-            ProductIDServer.instance(); // instantiate all singletons
-            SupplierIDServer.instance(); // instantiate all singletons
+            ClientIDServer.instance();
+            ProductIDServer.instance();
+            SupplierIDServer.instance();
             return (warehouse = new Warehouse());
         }
         else {
@@ -25,6 +28,7 @@ public class Warehouse implements Serializable {
         }
     }
 
+    // Add a product to the warehouse.
     public Product addProduct(String prodName, String quantity, String price) {
         Product product = new Product(prodName, quantity, price);
         if (productList.insertProduct(product)) {
@@ -33,6 +37,7 @@ public class Warehouse implements Serializable {
         return null;
     }
 
+    // Add a client to the warehouse.
     public Client addClient(String name, String address, String phone) {
         Client client = new Client(name, address, phone);
         if (clientList.insertClient(client)) {
@@ -41,12 +46,67 @@ public class Warehouse implements Serializable {
         return null;
     }
 
+    // Add a supplier to the warehouse.
     public Supplier addSupplier(String name, String address, String phone) {
         Supplier supplier = new Supplier(name, address, phone);
         if (supplierList.insertSupplier(supplier)) {
             return (supplier);
         }
         return null;
+    }
+
+    // Assign a product to a supplier.
+    public Product linkProduct(String supplierID, String productID) {
+
+        // Check if product with ID exists.
+        Product product = productList.search(productID);
+        if (product == null) {
+            return null;
+        }
+
+        // Check if supplier with ID exists.
+        Supplier supplier = supplierList.search(supplierID);
+        if (supplier == null) {
+            return null;
+        }
+
+        // Both objects exist, attempt to link them.
+        if (!(product.link(supplier) && supplier.link(product))) {
+            return null;
+        }
+
+        return product;
+    }
+
+    // Unasign a product to a supplier.
+    public Product unlinkProduct(String supplierID, String productID) {
+
+        // Check if product with ID exists.
+        Product product = productList.search(productID);
+        if (product == null) {
+            return null;
+        }
+
+        // Check if supplier with ID exists.
+        Supplier supplier = supplierList.search(supplierID);
+        if (supplier == null) {
+            return null;
+        }
+
+        // Both exist, attempt to unlink them.
+        if (!(product.unlink(supplier) && supplier.unlink(product))) {
+            return null;
+        }
+
+        return product;
+    }
+
+    public Supplier searchSupplier(String supplierID) {
+        return supplierList.search(supplierID);
+    }
+
+    public Product searchProduct(String productID) {
+        return productList.search(productID);
     }
 
     public Iterator getProducts() {
