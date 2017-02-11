@@ -160,7 +160,7 @@ public class UserInterface {
             return;
         }
         do {
-            String productID = getToken("Enter book ID: ");
+            String productID = getToken("Enter product ID: ");
             result = warehouse.linkProduct(supplierID, productID);
             if (result != null) {
                 System.out.println("Product [" + productID + "] assigned to supplier: [" + supplierID + "]");
