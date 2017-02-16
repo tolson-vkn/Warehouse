@@ -29,7 +29,7 @@ public class Warehouse implements Serializable {
     }
 
     // Add a product to the warehouse.
-    public Product addProduct(String prodName, String quantity, String price) {
+    public Product addProduct(String prodName, int quantity, float price) {
         Product product = new Product(prodName, quantity, price);
         if (productList.insertProduct(product)) {
             return (product);

@@ -54,12 +54,26 @@ public class UserInterface {
     }
 
     // Integer prompt using token method.
-    public int getNumber(String prompt) {
+    public int getInt(String prompt) {
         do {
             try {
                 String item = getToken(prompt);
                 Integer num = Integer.valueOf(item);
                 return num.intValue();
+            }
+            catch (NumberFormatException nfe) {
+                System.out.println("Please input a number ");
+            }
+        } while (true);
+    }
+
+    // Float prompt using token method.
+    public float getFloat(String prompt) {
+        do {
+            try {
+                String item = getToken(prompt);
+                float f = Float.parseFloat(item);
+                return f;
             }
             catch (NumberFormatException nfe) {
                 System.out.println("Please input a number ");
@@ -95,19 +109,19 @@ public class UserInterface {
     public void menu() {
         System.out.println("                 Warehouse System\n"
                          + "                      Stage 1\n\n"
-                         + "       +---------------------------------+\n"
-                         + "       | 1)  Add Client                  |\n"
-                         + "       | 2)  Add Product                 |\n"
-                         + "       | 3)  Add Supplier                |\n"
-                         + "       | 4)  Assign Product to Supplier  |\n"
-                         + "       | 5)  Unssign Product to Supplier |\n"
-                         + "       | 6)  Show Clients                |\n"
-                         + "       | 7)  Show Products               |\n"
-                         + "       | 8)  Show Suppliers              |\n"
-                         + "       | 9)  Save State                  |\n"
-                         + "       | 10) Display Menu                |\n"
-                         + "       | 0)  Exit                        |\n"
-                         + "       +---------------------------------+\n");
+                         + "       +------------------------------------+\n"
+                         + "       | " + ADD_CLIENT       + ")\tAdd Client                  |\n"
+                         + "       | " + ADD_PRODUCT      + ")\tAdd Product                 |\n"
+                         + "       | " + ADD_SUPPLIER     + ")\tAdd Supplier                |\n"
+                         + "       | " + ASSIGN_PRODUCT   + ")\tAssign Product to Supplier  |\n"
+                         + "       | " + UNASSIGN_PRODUCT + ")\tUnssign Product to Supplier |\n"
+                         + "       | " + SHOW_CLIENTS     + ")\tShow Clients                |\n"
+                         + "       | " + SHOW_PRODUCTS    + ")\tShow Products               |\n"
+                         + "       | " + SHOW_SUPPLIERS   + ")\tShow Suppliers              |\n"
+                         + "       | " + SAVE             + ")\tSave State                  |\n"
+                         + "       | " + MENU             + ")\tDisplay Menu                |\n"
+                         + "       | " + EXIT             + ")\tExit                        |\n"
+                         + "       +------------------------------------+\n");
     }
 
     // Capture tokens for adding a client.
@@ -127,8 +141,8 @@ public class UserInterface {
     public void addProduct() {
         Product result;
         String prodName = getToken("Enter product name: ");
-        String quantity = getToken("Enter quantity: ");
-        String price = getToken("Enter price per unit: $");
+        int quantity = getInt("Enter quantity: ");
+        float price = getFloat("Enter price per unit: $");
         result = warehouse.addProduct(prodName, quantity, price);
         if (result != null) {
             System.out.println(result);
