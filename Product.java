@@ -5,15 +5,15 @@ import java.io.*;
 public class Product implements Serializable {
     private static final long serialVersionUID = 1L;
     private String prodName;
-    private String quantity;
-    private String price;
+    private int quantity;
+    private float price;
     private String id;
     private List productSuppliers = new LinkedList();
     private static final String PRODUCT_STRING = "P";
 
     // NOTE: Final design won't have the contructor list quantity, this comes from
     //       shipments in development stage 2.
-    public Product(String prodName, String quantity, String price) {
+    public Product(String prodName, int quantity, float price) {
         this.prodName = prodName;
         this.quantity = quantity;
         this.price = price;
@@ -24,11 +24,11 @@ public class Product implements Serializable {
         return prodName;
     }
 
-    public String getQuantity() {
+    public int getQuantity() {
         return quantity;
     }
 
-    public String getPrice() {
+    public float getPrice() {
         return price;
     }
 
