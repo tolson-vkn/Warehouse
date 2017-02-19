@@ -36,6 +36,10 @@ public class Product implements Serializable {
         return id;
     }
 
+    public void setQuantity(int newQuantity) {
+        quantity = newQuantity;
+    }
+
     // Used to check equality in searching
     public boolean equals(String id) {
         return this.id.equals(id);
