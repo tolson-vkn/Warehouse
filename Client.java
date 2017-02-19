@@ -7,6 +7,7 @@ public class Client implements Serializable {
     private String address;
     private String phone;
     private String id;
+    private float balance = 0;
     private static final String CLIENT_STRING = "C";
 
     public Client(String name, String address, String phone) {
@@ -28,6 +29,10 @@ public class Client implements Serializable {
         return address;
     }
 
+    public float getBalance() {
+        return balance;
+    }
+
     public String getID() {
         return id;
     }
@@ -36,12 +41,16 @@ public class Client implements Serializable {
         name = newName;
     }
 
+    public void setPhone(String newPhone) {
+        phone = newPhone;
+    }
+
     public void setAddress(String newAddress) {
         address = newAddress;
     }
 
-    public void setPhone(String newPhone) {
-        phone = newPhone;
+    public void setBalance(float newBalance) {
+        balance = newBalance;
     }
 
     public boolean equals(String id) {
@@ -49,7 +58,7 @@ public class Client implements Serializable {
     }
 
     public String toString() {
-        String string = "Client name " + name + " address " + address + " id " + id + "phone " + phone;
+        String string = "Client name " + name + " address " + address + " id " + id + " phone " + phone + " balance " + balance;
         return string;
     }
 }

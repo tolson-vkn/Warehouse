@@ -6,6 +6,7 @@ public class Warehouse implements Serializable {
     private ProductList productList;
     private ClientList clientList;
     private SupplierList supplierList;
+    private OrderList orderList;
     private static Warehouse warehouse;
 
     // Instantiate the lists of objects.
@@ -13,6 +14,7 @@ public class Warehouse implements Serializable {
         productList  = ProductList.instance();
         clientList   = ClientList.instance();
         supplierList = SupplierList.instance();
+        orderList    = OrderList.instance();
     }
 
     // Get the server singleton instantiations.
@@ -21,6 +23,7 @@ public class Warehouse implements Serializable {
             ClientIDServer.instance();
             ProductIDServer.instance();
             SupplierIDServer.instance();
+            OrderIDServer.instance();
             return (warehouse = new Warehouse());
         }
         else {
@@ -101,12 +104,59 @@ public class Warehouse implements Serializable {
         return product;
     }
 
+    // Add a order to the warehouse.
+    public Order addOrder(Client client, Product product, int quantity) {
+        Order order = new Order(client, product, quantity);
+        if (orderList.insertOrder(order)) {
+            return (order);
+        }
+        return null;
+    }
+
+    // Process an order existing
+    public Order processOrder(String orderID) {
+        Order order = orderList.search(orderID);
+        if (order == null) {
+            return null;
+        }
+        Client client = order.getClient();
+        Product product = order.getProduct();
+        float pricePerUnit = product.getPrice();
+        int productQty = product.getQuantity();
+        int orderQty = order.getQuantity();
+
+        // check if order can proceed. later waitlist will handle other conditions.
+        if (orderQty > productQty) {
+            return null;
+        }
+
+        // Adjust client balance.
+        float oldBalance = client.getBalance();
+        float newBalance = orderQty * pricePerUnit;
+        client.setBalance(oldBalance - newBalance);
+
+        // Adjust warehouse stock.
+        product.setQuantity(productQty - orderQty);
+
+        // Completed, set status.
+        order.setStatus("C");
+        return order;
+    }
+
+    public Client searchClient(String clientID) {
+        return clientList.search(clientID);
+    }
+
     public Supplier searchSupplier(String supplierID) {
         return supplierList.search(supplierID);
     }
 
     public Product searchProduct(String productID) {
         return productList.search(productID);
+    }
+
+    public Order searchOrder(String orderID) {
+        return orderList.search(orderID);
     }
 
     public Iterator getProducts() {
@@ -119,6 +169,10 @@ public class Warehouse implements Serializable {
 
     public Iterator getSuppliers() {
         return supplierList.getSuppliers();
+    }
+
+    public Iterator getOrders() {
+        return orderList.getOrders();
     }
 
     public static Warehouse retrieve() {

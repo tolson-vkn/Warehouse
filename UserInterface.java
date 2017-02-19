@@ -10,13 +10,16 @@ public class UserInterface {
     private static final int ADD_CLIENT       = 1;
     private static final int ADD_PRODUCT      = 2;
     private static final int ADD_SUPPLIER     = 3;
-    private static final int ASSIGN_PRODUCT   = 4;
-    private static final int UNASSIGN_PRODUCT = 5;
-    private static final int SHOW_CLIENTS     = 6;
-    private static final int SHOW_PRODUCTS    = 7;
-    private static final int SHOW_SUPPLIERS   = 8;
-    private static final int SAVE             = 9;
-    private static final int MENU             = 10;
+    private static final int ACCEPT_ORDER     = 4;
+    private static final int PROCESS_ORDER    = 5;
+    private static final int ASSIGN_PRODUCT   = 6;
+    private static final int UNASSIGN_PRODUCT = 7;
+    private static final int SHOW_CLIENTS     = 8;
+    private static final int SHOW_PRODUCTS    = 9;
+    private static final int SHOW_SUPPLIERS   = 10;
+    private static final int SHOW_ORDERS      = 11;
+    private static final int SAVE             = 12;
+    private static final int MENU             = 13;
 
     private UserInterface() {
         if (yesOrNo("Look for saved data and use it?")) {
@@ -108,16 +111,19 @@ public class UserInterface {
     // Menu of warehouse options.
     public void menu() {
         System.out.println("                 Warehouse System\n"
-                         + "                      Stage 1\n\n"
+                         + "                      Stage 2\n\n"
                          + "       +------------------------------------+\n"
                          + "       | " + ADD_CLIENT       + ")\tAdd Client                  |\n"
                          + "       | " + ADD_PRODUCT      + ")\tAdd Product                 |\n"
                          + "       | " + ADD_SUPPLIER     + ")\tAdd Supplier                |\n"
                          + "       | " + ASSIGN_PRODUCT   + ")\tAssign Product to Supplier  |\n"
                          + "       | " + UNASSIGN_PRODUCT + ")\tUnssign Product to Supplier |\n"
+                         + "       | " + ACCEPT_ORDER     + ")\tAccept Order from Client    |\n"
+                         + "       | " + PROCESS_ORDER    + ")\tProcess Order               |\n"
                          + "       | " + SHOW_CLIENTS     + ")\tShow Clients                |\n"
                          + "       | " + SHOW_PRODUCTS    + ")\tShow Products               |\n"
                          + "       | " + SHOW_SUPPLIERS   + ")\tShow Suppliers              |\n"
+                         + "       | " + SHOW_ORDERS      + ")\tShow Orders                 |\n"
                          + "       | " + SAVE             + ")\tSave State                  |\n"
                          + "       | " + MENU             + ")\tDisplay Menu                |\n"
                          + "       | " + EXIT             + ")\tExit                        |\n"
@@ -211,6 +217,55 @@ public class UserInterface {
         } while (true);
     }
 
+    public void acceptOrder() {
+        Client clientObj;
+        Product productObj;
+        Order result;
+
+        String clientID = getToken("Enter a client ID to start order: ");
+        clientObj = warehouse.searchClient(clientID);
+        if (clientObj == null) {
+            System.out.println("Client does not exist.");
+            return;
+        }
+        String productID = getToken("Enter a product ID: ");
+        productObj = warehouse.searchProduct(productID);
+        if (productObj == null) {
+            System.out.println("Product does not exist.");
+            return;
+        }
+
+        int quantity = getInt("How many of the products to order?: ");
+
+        result = warehouse.addOrder(clientObj, productObj, quantity);
+        if (result == null) {
+            System.out.println("Order could not be added.");
+        }
+        else {
+            System.out.println("Order added to queue!");
+            System.out.println(result);
+        }
+    }
+
+    public void processOrder() {
+        Order orderObj;
+        String orderID = getToken("Enter an order ID process: ");
+
+        orderObj = warehouse.searchOrder(orderID);
+        if (orderObj == null) {
+            System.out.println("Order does not exist.");
+            return;
+        }
+
+        orderObj = warehouse.processOrder(orderID);
+        if (orderObj == null) {
+            System.out.println("Order could not be processed.");
+        }
+        else {
+            System.out.println("Order processed!");
+        }
+    }
+
     // Queries.
     public void showClients() {
         Iterator allClients = warehouse.getClients();
@@ -231,8 +286,16 @@ public class UserInterface {
     public void showSuppliers() {
         Iterator allSuppliers = warehouse.getSuppliers();
         while (allSuppliers.hasNext()) {
-            Supplier Supplier = (Supplier)(allSuppliers.next());
-            System.out.println(Supplier.toString());
+            Supplier supplier = (Supplier)(allSuppliers.next());
+            System.out.println(supplier.toString());
+        }
+    }
+
+    public void showOrders() {
+        Iterator allOrders = warehouse.getOrders();
+        while (allOrders.hasNext()) {
+            Order order = (Order)(allOrders.next());
+            System.out.println(order.toString());
         }
     }
 
@@ -267,38 +330,36 @@ public class UserInterface {
         while ((command = getCommand()) != EXIT) {
             switch (command) {
                 case ADD_CLIENT:        addClient();
-                break;
+                                        break;
                 case ADD_PRODUCT:       addProduct();
-                break;
+                                        break;
                 case ADD_SUPPLIER:      addSupplier();
-                break;
+                                        break;
                 case ASSIGN_PRODUCT:    linkProduct();
-                break;
+                                        break;
                 case UNASSIGN_PRODUCT:  unlinkProduct();
-                break;
+                                        break;
+                case ACCEPT_ORDER:      acceptOrder();
+                                        break;
+                case PROCESS_ORDER:     processOrder();
+                                        break;
                 case SHOW_CLIENTS:      showClients();
-                break;
+                                        break;
                 case SHOW_PRODUCTS:     showProducts();
-                break;
+                                        break;
                 case SHOW_SUPPLIERS:    showSuppliers();
-                break;
+                                        break;
+                case SHOW_ORDERS:       showOrders();
+                                        break;
                 case SAVE:              save();
-                break;
+                                        break;
                 case MENU:              menu();
-                break;
+                                        break;
             }
         }
     }
 
     public static void main(String[] s) {
-        try {
-            Client c1 = null;
-            System.out.println(c1.toString());
-        }
-        catch (NullPointerException ne) {
-            System.out.println("No problem; keep going");
-        }
-
         UserInterface.instance().process();
     }
 }
