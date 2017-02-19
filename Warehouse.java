@@ -137,6 +137,9 @@ public class Warehouse implements Serializable {
 
         // Adjust warehouse stock.
         product.setQuantity(productQty - orderQty);
+
+        // Completed, set status.
+        order.setStatus("C");
         return order;
     }
 

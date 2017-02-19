@@ -51,7 +51,7 @@ public class Order implements Serializable {
     }
 
     public boolean setStatus(String newStatus) {
-        if (!(newStatus.equals(COMPLETED) || newStatus.equals(WAITLIST) || newStatus.equals(QUEUED))) {
+        if ((newStatus.equals(COMPLETED) || newStatus.equals(WAITLIST) || newStatus.equals(QUEUED))) {
             status = newStatus;
             return true;
         }
@@ -65,7 +65,7 @@ public class Order implements Serializable {
     }
 
     public String toString() {
-        String string = "Order [" + id + "]:\nClient: " + client + "\n\t" + product + "\nQuantity to Order: " + quantity;
+        String string = "Order [" + id + "]:\nClient: " + client + "\n\t" + product + "\nQuantity to Order: " + quantity + "\nStatus: " + status;
         return string;
     }
 }
