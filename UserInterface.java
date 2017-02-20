@@ -237,7 +237,7 @@ public class UserInterface {
 
         int quantity = getInt("How many of the products to order?: ");
 
-        result = warehouse.addOrder(clientObj, productObj, quantity);
+        result = warehouse.addOrder(clientObj, productObj, quantity, "Q");
         if (result == null) {
             System.out.println("Order could not be added.");
         }
@@ -254,6 +254,12 @@ public class UserInterface {
         orderObj = warehouse.searchOrder(orderID);
         if (orderObj == null) {
             System.out.println("Order does not exist.");
+            return;
+        }
+
+        String orderStatus = orderObj.getStatus();
+        if (orderStatus.equals("C")) {
+            System.out.println("Completed orders cannot be processed!");
             return;
         }
 

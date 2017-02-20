@@ -105,8 +105,8 @@ public class Warehouse implements Serializable {
     }
 
     // Add a order to the warehouse.
-    public Order addOrder(Client client, Product product, int quantity) {
-        Order order = new Order(client, product, quantity);
+    public Order addOrder(Client client, Product product, int quantity, String status) {
+        Order order = new Order(client, product, quantity, status);
         if (orderList.insertOrder(order)) {
             return (order);
         }
@@ -125,9 +125,21 @@ public class Warehouse implements Serializable {
         int productQty = product.getQuantity();
         int orderQty = order.getQuantity();
 
-        // check if order can proceed. later waitlist will handle other conditions.
-        if (orderQty > productQty) {
-            return null;
+        int newWareHouseQty = productQty - orderQty;
+
+        // Order excedes warehouse stock.
+        if (newWareHouseQty < 0) {
+            int waitlistQty = Math.abs(newWareHouseQty);
+            orderQty = orderQty - waitlistQty;
+            order.setQuantity(orderQty);
+            Order waitlistOrder = new Order(client, product, waitlistQty, "W");
+            if (!orderList.insertOrder(waitlistOrder)) {
+                return null;
+            }
+            newWareHouseQty = 0;
+        }
+        else {
+            newWareHouseQty = productQty - orderQty;
         }
 
         // Adjust client balance.
@@ -136,7 +148,7 @@ public class Warehouse implements Serializable {
         client.setBalance(oldBalance - newBalance);
 
         // Adjust warehouse stock.
-        product.setQuantity(productQty - orderQty);
+        product.setQuantity(newWareHouseQty);
 
         // Completed, set status.
         order.setStatus("C");

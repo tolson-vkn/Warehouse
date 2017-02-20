@@ -14,11 +14,11 @@ public class Order implements Serializable {
     private static final String WAITLIST  = "W";
     private static final String QUEUED    = "Q";
 
-    public Order(Client client, Product product, int quantity) {
+    public Order(Client client, Product product, int quantity, String status) {
         this.client = client;
         this.product = product;
         this.quantity = quantity;
-        this.status = QUEUED;
+        this.status = statusCheck(status) ? status : QUEUED;
         id = ORDER_STRING + (OrderIDServer.instance()).getID();
     }
 
@@ -32,6 +32,10 @@ public class Order implements Serializable {
 
     public int getQuantity() {
         return quantity;
+    }
+
+    public String getStatus() {
+        return status;
     }
 
     public String getID() {
@@ -50,9 +54,8 @@ public class Order implements Serializable {
         quantity = newQuantity;
     }
 
-    public boolean setStatus(String newStatus) {
-        if ((newStatus.equals(COMPLETED) || newStatus.equals(WAITLIST) || newStatus.equals(QUEUED))) {
-            status = newStatus;
+    public boolean statusCheck(String isStatus) {
+        if (isStatus.equals(COMPLETED) || isStatus.equals(WAITLIST) || isStatus.equals(QUEUED)) {
             return true;
         }
         else {
@@ -60,12 +63,16 @@ public class Order implements Serializable {
         }
     }
 
+    public void setStatus(String newStatus) {
+        status = statusCheck(newStatus) ? newStatus : status;
+    }
+
     public boolean equals(String id) {
         return this.id.equals(id);
     }
 
     public String toString() {
-        String string = "Order [" + id + "]:\nClient: " + client + "\n\t" + product + "\nQuantity to Order: " + quantity + "\nStatus: " + status;
+        String string = "Order [" + id + "]:\n" + product + "\nQuantity to Order: " + quantity + "\nStatus: " + status;
         return string;
     }
 }
