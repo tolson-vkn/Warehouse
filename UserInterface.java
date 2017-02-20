@@ -12,14 +12,15 @@ public class UserInterface {
     private static final int ADD_SUPPLIER     = 3;
     private static final int ACCEPT_ORDER     = 4;
     private static final int PROCESS_ORDER    = 5;
-    private static final int ASSIGN_PRODUCT   = 6;
-    private static final int UNASSIGN_PRODUCT = 7;
-    private static final int SHOW_CLIENTS     = 8;
-    private static final int SHOW_PRODUCTS    = 9;
-    private static final int SHOW_SUPPLIERS   = 10;
-    private static final int SHOW_ORDERS      = 11;
-    private static final int SAVE             = 12;
-    private static final int MENU             = 13;
+    private static final int PAYMENT          = 6;
+    private static final int ASSIGN_PRODUCT   = 7;
+    private static final int UNASSIGN_PRODUCT = 8;
+    private static final int SHOW_CLIENTS     = 9;
+    private static final int SHOW_PRODUCTS    = 10;
+    private static final int SHOW_SUPPLIERS   = 11;
+    private static final int SHOW_ORDERS      = 12;
+    private static final int SAVE             = 13;
+    private static final int MENU             = 14;
 
     private UserInterface() {
         if (yesOrNo("Look for saved data and use it?")) {
@@ -71,11 +72,11 @@ public class UserInterface {
     }
 
     // Float prompt using token method.
-    public float getFloat(String prompt) {
+    public double getDouble(String prompt) {
         do {
             try {
                 String item = getToken(prompt);
-                float f = Float.parseFloat(item);
+                double f = Double.parseDouble(item);
                 return f;
             }
             catch (NumberFormatException nfe) {
@@ -116,10 +117,11 @@ public class UserInterface {
                          + "       | " + ADD_CLIENT       + ")\tAdd Client                  |\n"
                          + "       | " + ADD_PRODUCT      + ")\tAdd Product                 |\n"
                          + "       | " + ADD_SUPPLIER     + ")\tAdd Supplier                |\n"
-                         + "       | " + ASSIGN_PRODUCT   + ")\tAssign Product to Supplier  |\n"
-                         + "       | " + UNASSIGN_PRODUCT + ")\tUnssign Product to Supplier |\n"
                          + "       | " + ACCEPT_ORDER     + ")\tAccept Order from Client    |\n"
                          + "       | " + PROCESS_ORDER    + ")\tProcess Order               |\n"
+                         + "       | " + PAYMENT          + ")\tMake a payment              |\n"
+                         + "       | " + ASSIGN_PRODUCT   + ")\tAssign Product to Supplier  |\n"
+                         + "       | " + UNASSIGN_PRODUCT + ")\tUnssign Product to Supplier |\n"
                          + "       | " + SHOW_CLIENTS     + ")\tShow Clients                |\n"
                          + "       | " + SHOW_PRODUCTS    + ")\tShow Products               |\n"
                          + "       | " + SHOW_SUPPLIERS   + ")\tShow Suppliers              |\n"
@@ -148,7 +150,7 @@ public class UserInterface {
         Product result;
         String prodName = getToken("Enter product name: ");
         int quantity = getInt("Enter quantity: ");
-        float price = getFloat("Enter price per unit: $");
+        double price = getDouble("Enter price per unit: $");
         result = warehouse.addProduct(prodName, quantity, price);
         if (result != null) {
             System.out.println(result);
@@ -272,6 +274,36 @@ public class UserInterface {
         }
     }
 
+    public void payment() {
+        Client result;
+        String clientID = getToken("Enter a client ID to make a payment for: ");
+
+        result = warehouse.searchClient(clientID);
+        if (result == null) {
+            System.out.println("Client does not exist.");
+            return;
+        }
+
+        if (!warehouse.needsPayment(clientID)) {
+            System.out.println("Client does not need to make payment!");
+            return;
+        }
+
+        double clientPayment = getDouble("Enter amount to pay: ");
+        if (clientPayment < 0) {
+            System.out.println("Cannot mane negative paments.");
+            return;
+        }
+
+        result = warehouse.makePayment(clientID, clientPayment);
+        if (result == null) {
+            System.out.println("Payment could not be made.");
+        }
+        else {
+            System.out.println("Payment made, thank you!");
+        }
+    }
+
     // Queries.
     public void showClients() {
         Iterator allClients = warehouse.getClients();
@@ -348,6 +380,8 @@ public class UserInterface {
                 case ACCEPT_ORDER:      acceptOrder();
                                         break;
                 case PROCESS_ORDER:     processOrder();
+                                        break;
+                case PAYMENT:           payment();
                                         break;
                 case SHOW_CLIENTS:      showClients();
                                         break;

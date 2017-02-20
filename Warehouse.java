@@ -32,7 +32,7 @@ public class Warehouse implements Serializable {
     }
 
     // Add a product to the warehouse.
-    public Product addProduct(String prodName, int quantity, float price) {
+    public Product addProduct(String prodName, int quantity, double price) {
         Product product = new Product(prodName, quantity, price);
         if (productList.insertProduct(product)) {
             return (product);
@@ -121,7 +121,7 @@ public class Warehouse implements Serializable {
         }
         Client client = order.getClient();
         Product product = order.getProduct();
-        float pricePerUnit = product.getPrice();
+        double pricePerUnit = product.getPrice();
         int productQty = product.getQuantity();
         int orderQty = order.getQuantity();
 
@@ -143,8 +143,8 @@ public class Warehouse implements Serializable {
         }
 
         // Adjust client balance.
-        float oldBalance = client.getBalance();
-        float newBalance = orderQty * pricePerUnit;
+        double oldBalance = client.getBalance();
+        double newBalance = orderQty * pricePerUnit;
         client.setBalance(oldBalance - newBalance);
 
         // Adjust warehouse stock.
@@ -153,6 +153,32 @@ public class Warehouse implements Serializable {
         // Completed, set status.
         order.setStatus("C");
         return order;
+    }
+
+    public boolean needsPayment(String clientID) {
+        Client client = clientList.search(clientID);
+        if (client == null) {
+            return false;
+        }
+
+        return (client.getBalance() < 0) ? true : false;
+    }
+
+    public Client makePayment(String clientID, double payment) {
+        Client client = clientList.search(clientID);
+        if (client == null) {
+            return null;
+        }
+
+        double oldBalance = client.getBalance();
+        if (payment < 0 || payment > Math.abs(oldBalance)) {
+            return null;
+        }
+
+        double newBalance = oldBalance + payment;
+
+        client.setBalance(newBalance);
+        return client;
     }
 
     public Client searchClient(String clientID) {
