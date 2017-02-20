@@ -6,17 +6,17 @@ public class Product implements Serializable {
     private static final long serialVersionUID = 1L;
     private String prodName;
     private int quantity;
-    private float price;
+    private double price;
     private String id;
     private List productSuppliers = new LinkedList();
     private static final String PRODUCT_STRING = "P";
 
     // NOTE: Final design won't have the contructor list quantity, this comes from
-    //       shipments in development stage 2.
-    public Product(String prodName, int quantity, float price) {
+    //       shipments in development stage 3.
+    public Product(String prodName, int quantity, double price) {
         this.prodName = prodName;
         this.quantity = quantity;
-        this.price = price;
+        this.price = moneyRound(price);
         id = PRODUCT_STRING + (ProductIDServer.instance()).getID();
     }
 
@@ -28,7 +28,7 @@ public class Product implements Serializable {
         return quantity;
     }
 
-    public float getPrice() {
+    public double getPrice() {
         return price;
     }
 
@@ -53,6 +53,10 @@ public class Product implements Serializable {
     // Unassign relationship between products and suppliers.
     public boolean unlink(Supplier supplier) {
         return productSuppliers.remove(supplier) ? true : false;
+    }
+
+    public double moneyRound(double num) {
+        return Math.round(num * 100.0) / 100.0;
     }
 
     public String toString() {
