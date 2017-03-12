@@ -24,6 +24,8 @@ public class Warehouse implements Serializable {
             ProductIDServer.instance();
             SupplierIDServer.instance();
             OrderIDServer.instance();
+            WaitlistIDServer.instance();
+            OrderItemIDServer.instance();
             return (warehouse = new Warehouse());
         }
         else {
@@ -31,9 +33,14 @@ public class Warehouse implements Serializable {
         }
     }
 
+    public void showWL() {
+        Client client = clientList.search("C1");
+        client.getWaitlistOrders();
+    }
+
     // Add a product to the warehouse.
-    public Product addProduct(String prodName, int quantity, double price) {
-        Product product = new Product(prodName, quantity, price);
+    public Product addProduct(String prodName, double price) {
+        Product product = new Product(prodName, price);
         if (productList.insertProduct(product)) {
             return (product);
         }
@@ -104,55 +111,185 @@ public class Warehouse implements Serializable {
         return product;
     }
 
+    public boolean isLinked(String supplierID, String productID) {
+        // Check if supplier with ID exists.
+        Supplier supplier = supplierList.search(supplierID);
+        if (supplier == null) {
+            return false;
+        }
+
+        // Check if product with ID exists.
+        Product product = productList.search(productID);
+        if (product == null) {
+            return false;
+        }
+
+        return (product.isLinked(supplierID) && supplier.isLinked(productID));
+    }
+
+    public Product addShipment(String supplierID, String productID, int quantity) {
+        // Check if supplier with ID exists.
+        Supplier supplier = supplierList.search(supplierID);
+        if (supplier == null) {
+            return null;
+        }
+
+        // Check if product with ID exists.
+        Product product = productList.search(productID);
+        if (product == null) {
+            return null;
+        }
+
+        // Check if products are offered by the supplier.
+        if(!(product.isLinked(supplierID) && supplier.isLinked(productID))) {
+            return null;
+        }
+
+        // Process waitlist if needed.
+        int waitlistQty = processWaitlists(productID, quantity);
+        if (waitlistQty != quantity) {
+            product.setQuantity(waitlistQty);
+        }
+        else {
+            product.addQuantity(quantity);
+        }
+
+        return product;
+    }
+
+    public int processWaitlists(String productID, int shipmentQty) {
+        // Check if product with ID exists.
+        Product product = productList.search(productID);
+        if (product == null) {
+            return shipmentQty;
+        }
+        int productQty = product.getQuantity();
+        double pricePerUnit = product.getPrice();
+
+        for (Iterator iterator = product.getWaitlistOrders(); iterator.hasNext();) {
+
+            // Attempt to process all waitlists for product.
+            Waitlist waitlist = (Waitlist)(iterator.next());
+            int waitlistQty = waitlist.getQuantity();
+
+            // Can fullfill part of order.
+            if ((productQty + shipmentQty) >= waitlistQty) {
+                int temp = waitlistQty - productQty;
+                shipmentQty = shipmentQty - (waitlistQty - productQty);
+                double oldBalance = waitlist.getClient().getBalance();
+                double newBalance = waitlistQty * pricePerUnit;
+                waitlist.getClient().setBalance(oldBalance - newBalance);
+                iterator.remove();
+            }
+        }
+        return shipmentQty;
+    }
+
     // Add a order to the warehouse.
-    public Order addOrder(Client client, Product product, int quantity, String status) {
-        Order order = new Order(client, product, quantity, status);
+    public Order createOrder(String clientID) {
+        // Check if client with ID exists.
+        Client client = clientList.search(clientID);
+        if (client == null) {
+            return null;
+        }
+
+        Order order = new Order(client);
         if (orderList.insertOrder(order)) {
-            return (order);
+            return order;
         }
         return null;
     }
 
-    // Process an order existing
+    // Add a order to the warehouse.
+    public OrderItem addToOrder(String orderID, String productID, int quantity) {
+        // Check if order with ID exists.
+        Order order = orderList.search(orderID);
+        if (order == null) {
+            return null;
+        }
+
+        Product product = productList.search(productID);
+        if (product == null) {
+            return null;
+        }
+
+        OrderItem orderitem = new OrderItem(product, quantity);
+        if (order.addOrderItem(orderitem)) {
+            return orderitem;
+        }
+        return null;
+    }
+
+    // // Process an order existing
     public Order processOrder(String orderID) {
         Order order = orderList.search(orderID);
         if (order == null) {
             return null;
         }
         Client client = order.getClient();
-        Product product = order.getProduct();
-        double pricePerUnit = product.getPrice();
-        int productQty = product.getQuantity();
-        int orderQty = order.getQuantity();
 
-        int newWareHouseQty = productQty - orderQty;
 
-        // Order excedes warehouse stock.
-        if (newWareHouseQty < 0) {
-            int waitlistQty = Math.abs(newWareHouseQty);
-            orderQty = orderQty - waitlistQty;
-            order.setQuantity(orderQty);
-            Order waitlistOrder = new Order(client, product, waitlistQty, "W");
-            if (!orderList.insertOrder(waitlistOrder)) {
+        for (Iterator iterator = order.getOrderItems();  iterator.hasNext();) {
+            OrderItem orderitem = (OrderItem) iterator.next();
+            if (!orderitem.isPending()) {
+                continue;
+            }
+            Product product = orderitem.getProduct();
+            double pricePerUnit = product.getPrice();
+            int productQty = product.getQuantity();
+            int orderQty = orderitem.getQuantity();
+
+            int newWareHouseQty = productQty - orderQty;
+
+            if (newWareHouseQty < 0) {
+                Waitlist waitlistOrder = new Waitlist(client, product, orderQty);
+                if (client.addWaitlist(waitlistOrder) && product.addWaitlist(waitlistOrder)) {
+                    orderitem.setStatusW();
+                }
+            }
+            else {
+                // Adjust client balance.
+                double oldBalance = client.getBalance();
+                double newBalance = orderQty * pricePerUnit;
+                client.setBalance(oldBalance - newBalance);
+                orderitem.setStatusC();
+
+                // Adjust warehouse stock.
+                product.setQuantity(newWareHouseQty);
+            }
+        }
+        return order;
+    }
+
+    public Invoice createInvoice(String orderID) {
+        Order order = orderList.search(orderID);
+        if (order == null) {
+            return null;
+        }
+
+        Client client = order.getClient();
+        Invoice invoice = new Invoice(order);
+
+        for (Iterator iterator = order.getOrderItems();  iterator.hasNext();) {
+            OrderItem orderitem = (OrderItem) iterator.next();
+            if (orderitem.isPending()) {
                 return null;
             }
-            newWareHouseQty = 0;
+            Product product = orderitem.getProduct();
+            double pricePerUnit = product.getPrice();
+            int orderQty = orderitem.getQuantity();
+            double orderPrice = orderQty * pricePerUnit;
+
+            InvoiceItem invoiceitem = new InvoiceItem(product, orderQty, orderitem.getStatus(), orderPrice);
+            invoice.addInvoiceItem(invoiceitem);
+
         }
-        else {
-            newWareHouseQty = productQty - orderQty;
+
+        if (!client.addInvoice(invoice)) {
+            return null;
         }
 
-        // Adjust client balance.
-        double oldBalance = client.getBalance();
-        double newBalance = orderQty * pricePerUnit;
-        client.setBalance(oldBalance - newBalance);
-
-        // Adjust warehouse stock.
-        product.setQuantity(newWareHouseQty);
-
-        // Completed, set status.
-        order.setStatus("C");
-        return order;
+        return invoice;
     }
 
     public boolean needsPayment(String clientID) {
@@ -177,7 +314,7 @@ public class Warehouse implements Serializable {
 
         double newBalance = oldBalance + payment;
 
-        client.setBalance(newBalance);
+        client.makePayment(newBalance);
         return client;
     }
 
@@ -213,6 +350,22 @@ public class Warehouse implements Serializable {
         return orderList.getOrders();
     }
 
+    public Iterator getInvoices(String clientID) {
+        Client client = clientList.search(clientID);
+        if (client == null) {
+            return null;
+        }
+        return client.getInvoices();
+    }
+
+    public Iterator getTransactions(String clientID) {
+        Client client = clientList.search(clientID);
+        if (client == null) {
+            return null;
+        }
+        return client.getTransactions();
+    }
+
     public static Warehouse retrieve() {
         try {
             FileInputStream file = new FileInputStream("WarehouseData");
@@ -221,6 +374,9 @@ public class Warehouse implements Serializable {
             ClientIDServer.retrieve(input);
             ProductIDServer.retrieve(input);
             SupplierIDServer.retrieve(input);
+            OrderIDServer.retrieve(input);
+            WaitlistIDServer.retrieve(input);
+            OrderItemIDServer.retrieve(input);
             return warehouse;
         }
         catch(IOException ioe) {
@@ -241,6 +397,9 @@ public class Warehouse implements Serializable {
             output.writeObject(ClientIDServer.instance());
             output.writeObject(ProductIDServer.instance());
             output.writeObject(SupplierIDServer.instance());
+            output.writeObject(OrderIDServer.instance());
+            output.writeObject(WaitlistIDServer.instance());
+            output.writeObject(OrderItemIDServer.instance());
             return true;
         }
         catch(IOException ioe) {

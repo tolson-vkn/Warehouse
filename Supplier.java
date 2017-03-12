@@ -55,11 +55,20 @@ public class Supplier implements Serializable {
         return suppliersOfProduct.add(product) ? true : false;
     }
 
-    // Unassign relationship between products and suppliers. 
+    // Unassign relationship between products and suppliers.
     public boolean unlink(Product product) {
         return suppliersOfProduct.remove(product) ? true : false;
     }
 
+    public boolean isLinked(String productID) {
+        for (Iterator iterator = suppliersOfProduct.iterator(); iterator.hasNext(); ) {
+            Product product = (Product) iterator.next();
+            if (product.getID().equals(productID)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public String toString() {
         String string = "Supplier name " + name + " address " + address + " id " + id + "phone " + phone;

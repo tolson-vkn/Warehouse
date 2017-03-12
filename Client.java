@@ -9,12 +9,45 @@ public class Client implements Serializable {
     private String id;
     private double balance = 0;
     private static final String CLIENT_STRING = "C";
+    private List transactions = new LinkedList();
+    private List waitlistOrders = new LinkedList();
+    private List orders = new LinkedList();
+    private List invoices = new LinkedList();
 
     public Client(String name, String address, String phone) {
         this.name = name;
         this.address = address;
         this.phone = phone;
         id = CLIENT_STRING + (ClientIDServer.instance()).getID();
+        transactions.add(new Transaction("Client added to warehouse!"));
+    }
+
+    public boolean addInvoice(Invoice invoice) {
+        transactions.add(new Transaction("Invoice added for " + invoice.getOrder().getID()));
+        return invoices.add(invoice);
+    }
+
+    public boolean addWaitlist(Waitlist waitlist) {
+        transactions.add(new Transaction("Waitlist added for " + waitlist.getProduct().getProdName()));
+        return waitlistOrders.add(waitlist);
+    }
+
+    public boolean removeWaitlist(String waitlistID) {
+        for (ListIterator iterator = waitlistOrders.listIterator(); iterator.hasNext(); ) {
+            Waitlist waitlist = (Waitlist) iterator.next();
+            String id = waitlist.getID();
+            if (id.equals(waitlistID)) {
+                transactions.add(new Transaction ("Waitlist removed for " + waitlist.getProduct().getProdName()));
+                iterator.remove();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean addOrder(Order order) {
+        transactions.add(new Transaction("Order added."));
+        return orders.add(order);
     }
 
     public String getName() {
@@ -37,6 +70,31 @@ public class Client implements Serializable {
         return id;
     }
 
+    public Iterator getTransactions() {
+        List result = new LinkedList();
+        for (Iterator iterator = transactions.iterator(); iterator.hasNext(); ) {
+            Transaction transaction = (Transaction) iterator.next();
+            result.add(transaction);
+        }
+        return (result.iterator());
+    }
+
+    public Iterator getInvoices() {
+        List result = new LinkedList();
+        for (Iterator iterator = invoices.iterator(); iterator.hasNext(); ) {
+            Invoice invoice = (Invoice) iterator.next();
+            result.add(invoice);
+        }
+        return (result.iterator());
+    }
+
+    public void getWaitlistOrders() {
+        for (Iterator iterator = waitlistOrders.iterator(); iterator.hasNext(); ) {
+            Waitlist waitlist = (Waitlist) iterator.next();
+            System.out.println(waitlist);
+        }
+    }
+
     public void setName(String newName) {
         name = newName;
     }
@@ -51,6 +109,11 @@ public class Client implements Serializable {
 
     public void setBalance(double newBalance) {
         balance = moneyRound(newBalance);
+    }
+
+    public void makePayment(double newBalance) {
+        setBalance(newBalance);
+        transactions.add(new Transaction("Payment | Balance: " + balance));
     }
 
     public boolean equals(String id) {
