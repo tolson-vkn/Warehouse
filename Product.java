@@ -9,15 +9,32 @@ public class Product implements Serializable {
     private double price;
     private String id;
     private List productSuppliers = new LinkedList();
+    private List waitlistOrders = new LinkedList();
     private static final String PRODUCT_STRING = "P";
 
     // NOTE: Final design won't have the contructor list quantity, this comes from
     //       shipments in development stage 3.
-    public Product(String prodName, int quantity, double price) {
+    public Product(String prodName, double price) {
         this.prodName = prodName;
-        this.quantity = quantity;
         this.price = moneyRound(price);
+        quantity = 0;
         id = PRODUCT_STRING + (ProductIDServer.instance()).getID();
+    }
+
+    public boolean addWaitlist(Waitlist waitlist) {
+        return waitlistOrders.add(waitlist);
+    }
+
+    public boolean removeWaitlist(String waitlistID) {
+        for (ListIterator iterator = waitlistOrders.listIterator(); iterator.hasNext(); ) {
+            Waitlist waitlist = (Waitlist) iterator.next();
+            String id = waitlist.getID();
+            if (id.equals(waitlistID)) {
+                iterator.remove();
+                return true;
+            }
+        }
+        return false;
     }
 
     public String getProdName() {
@@ -36,6 +53,11 @@ public class Product implements Serializable {
         return id;
     }
 
+    public Iterator getWaitlistOrders() {
+        return waitlistOrders.iterator();
+    }
+
+
     public void setQuantity(int newQuantity) {
         quantity = newQuantity;
     }
@@ -43,6 +65,10 @@ public class Product implements Serializable {
     // Used to check equality in searching
     public boolean equals(String id) {
         return this.id.equals(id);
+    }
+
+    public void addQuantity(int addQuantity) {
+        quantity += addQuantity;
     }
 
     // Assign relationship between products and suppliers.
@@ -53,6 +79,16 @@ public class Product implements Serializable {
     // Unassign relationship between products and suppliers.
     public boolean unlink(Supplier supplier) {
         return productSuppliers.remove(supplier) ? true : false;
+    }
+
+    public boolean isLinked(String supplierID) {
+        for (Iterator iterator = productSuppliers.iterator(); iterator.hasNext(); ) {
+            Supplier supplier = (Supplier) iterator.next();
+            if (supplier.getID().equals(supplierID)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public double moneyRound(double num) {
