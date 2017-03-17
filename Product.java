@@ -26,15 +26,23 @@ public class Product implements Serializable {
     }
 
     public boolean removeWaitlist(String waitlistID) {
-        for (ListIterator iterator = waitlistOrders.listIterator(); iterator.hasNext(); ) {
+        Waitlist waitlist = searchWaitlist(waitlistID);
+        if (waitlist == null) {
+            return false;
+        }
+        else {
+            return waitlistOrders.remove(waitlist);
+        }
+    }
+
+    public Waitlist searchWaitlist(String waitlistID) {
+        for (Iterator iterator = waitlistOrders.iterator(); iterator.hasNext(); ) {
             Waitlist waitlist = (Waitlist) iterator.next();
-            String id = waitlist.getID();
-            if (id.equals(waitlistID)) {
-                iterator.remove();
-                return true;
+            if (waitlist.getID().equals(waitlistID)) {
+                return waitlist;
             }
         }
-        return false;
+        return null;
     }
 
     public String getProdName() {

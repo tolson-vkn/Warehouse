@@ -33,11 +33,6 @@ public class Warehouse implements Serializable {
         }
     }
 
-    public void showWL() {
-        Client client = clientList.search("C1");
-        client.getWaitlistOrders();
-    }
-
     // Add a product to the warehouse.
     public Product addProduct(String prodName, double price) {
         Product product = new Product(prodName, price);
@@ -145,44 +140,41 @@ public class Warehouse implements Serializable {
             return null;
         }
 
-        // Process waitlist if needed.
-        int waitlistQty = processWaitlists(productID, quantity);
-        if (waitlistQty != quantity) {
-            product.setQuantity(waitlistQty);
-        }
-        else {
-            product.addQuantity(quantity);
-        }
+        product.addQuantity(quantity);
 
         return product;
     }
 
-    public int processWaitlists(String productID, int shipmentQty) {
-        // Check if product with ID exists.
+    public Waitlist processWaitlist(String productID, String waitlistID, int shipmentQty) {
+        // System.out.println("\u001B[33m" + "in processWaitlist" + "\u001B[37m");
         Product product = productList.search(productID);
         if (product == null) {
-            return shipmentQty;
+            return null;
         }
         int productQty = product.getQuantity();
         double pricePerUnit = product.getPrice();
 
-        for (Iterator iterator = product.getWaitlistOrders(); iterator.hasNext();) {
-
-            // Attempt to process all waitlists for product.
-            Waitlist waitlist = (Waitlist)(iterator.next());
-            int waitlistQty = waitlist.getQuantity();
-
-            // Can fullfill part of order.
-            if ((productQty + shipmentQty) >= waitlistQty) {
-                int temp = waitlistQty - productQty;
-                shipmentQty = shipmentQty - (waitlistQty - productQty);
-                double oldBalance = waitlist.getClient().getBalance();
-                double newBalance = waitlistQty * pricePerUnit;
-                waitlist.getClient().setBalance(oldBalance - newBalance);
-                iterator.remove();
-            }
+        Waitlist waitlist = product.searchWaitlist(waitlistID);
+        if (waitlist == null) {
+            return null;
         }
-        return shipmentQty;
+        // System.out.println("\u001B[33m" + "given WID " + waitlistID + " from iterator WID " + waitlist.getID() + "\u001B[37m");
+        int waitlistQty = waitlist.getQuantity();
+
+        // Can fullfill part of order.
+        if ((productQty + shipmentQty) >= waitlistQty) {
+            int temp = waitlistQty - productQty;
+            shipmentQty = shipmentQty - (waitlistQty - productQty);
+            double oldBalance = waitlist.getClient().getBalance();
+            double newBalance = waitlistQty * pricePerUnit;
+            waitlist.getClient().setBalance(oldBalance - newBalance);
+
+            // product.removeWaitlist(waitlistID);
+            // System.out.println("\u001B[33m" + "pre return waitlist" + "\u001B[37m");
+            return waitlist;
+        }
+
+        return null;
     }
 
     // Add a order to the warehouse.
@@ -349,6 +341,12 @@ public class Warehouse implements Serializable {
     public Iterator getOrders() {
         return orderList.getOrders();
     }
+
+    public Iterator getWaitlistOrders(String productID) {
+        Product product = productList.search(productID);
+        return product.getWaitlistOrders();
+    }
+
 
     public Iterator getInvoices(String clientID) {
         Client client = clientList.search(clientID);
