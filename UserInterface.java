@@ -118,7 +118,7 @@ public class UserInterface {
     public void menu() {
         System.out.println(
            "                 Warehouse System\n"
-         + "                      Stage 2\n\n"
+         + "                      Stage 3\n\n"
          + "       +--------------------------------------+\n"
          + "       | " + ADD_CLIENT       + ")\tAdd Client                    |\n"
          + "       | " + ADD_PRODUCT      + ")\tAdd Product                   |\n"
@@ -304,6 +304,35 @@ public class UserInterface {
             }
 
             int quantity = getInt("How many of the products are in the shipment?: ");
+
+            for (Iterator iterator = warehouse.getWaitlistOrders(productID); iterator.hasNext();) {
+                Waitlist waitlist = (Waitlist)(iterator.next());
+                System.out.println("There is a waitlisted order for this shipment:");
+                Client theClient = waitlist.getClient();
+                String waitlistReply =  "\t" + theClient.getName() + "\n\tneeds " +
+                waitlist.getQuantity() + " " + productObj.getProdName() + "(s) to fullfill waitlist.";
+                System.out.println(waitlistReply);
+
+                if (quantity < waitlist.getQuantity()) {
+                    System.out.println("There is not enough in the shipment to fullfill this waitlist order.\n");
+                    continue;
+                }
+
+                if (yesOrNo("Attempt to fullfill waitlist?")) {
+                    waitlist = warehouse.processWaitlist(productID, waitlist.getID(), quantity);
+                    if (waitlist == null) {
+                        System.out.println("Could not fullfill waitlist order.");
+                    }
+                    else {
+                        System.out.println(theClient.getName() + " waitlist fullfilled.");
+                        quantity = quantity - waitlist.getQuantity();
+                        iterator.remove();
+                    }
+                }
+
+                // For pretty output.
+                System.out.println();
+            }
 
             result = warehouse.addShipment(supplierID, productID, quantity);
             if (result == null) {
@@ -491,9 +520,9 @@ public class UserInterface {
 
     public void test() {
         // System.out.println("Could not get this working properly, please view logfile in finished folder.");
-        String supplierID = getToken("Enter supplier ID: ");
-        String productID = getToken("Enter product ID: ");
-        System.out.println("Status: " + warehouse.isLinked(supplierID, productID));
+        // String supplierID = getToken("Enter supplier ID: ");
+        // String productID = getToken("Enter product ID: ");
+        // System.out.println("Status: " + warehouse.isLinked(supplierID, productID));
     }
 
     // Switch case processing for menu.
