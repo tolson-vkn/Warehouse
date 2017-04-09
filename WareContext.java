@@ -128,7 +128,7 @@ public class WareContext {
         states[6] = ClientOpsState.instance();
         nextState = new int[7][7];
         nextState[0][0] =  2; nextState[0][1] =  1; nextState[0][2] =  2; nextState[0][3] =  3; nextState[0][4] =  4; nextState[0][5] =  5; nextState[0][6] = -2;
-        nextState[1][0] =  2; nextState[1][1] =  1; nextState[1][2] = -2; nextState[1][3] =  3; nextState[1][4] = -2; nextState[1][5] =  5; nextState[1][6] =  6;
+        nextState[1][0] =  0; nextState[1][1] =  1; nextState[1][2] = -2; nextState[1][3] =  3; nextState[1][4] = -2; nextState[1][5] =  5; nextState[1][6] =  6;
         nextState[2][0] =  0; nextState[2][1] =  1; nextState[2][2] = -1; nextState[2][3] =  3; nextState[2][4] = -2; nextState[2][5] = -2; nextState[2][6] = -2;
         nextState[3][0] =  0; nextState[3][1] =  1; nextState[3][2] =  2; nextState[3][3] = -2; nextState[3][4] =  4; nextState[3][5] = -2; nextState[3][6] = -2;
         nextState[4][0] =  0; nextState[4][1] = -2; nextState[4][2] = -2; nextState[4][3] =  3; nextState[4][4] = -2; nextState[4][5] = -2; nextState[4][6] = -2;
