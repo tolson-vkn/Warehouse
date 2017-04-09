@@ -2,31 +2,31 @@ import java.util.*;
 import java.text.*;
 import java.io.*;
 
-public class Querystate extends WareState {
+public class QueryState extends WareState {
     private static Warehouse warehouse;
-    private static Querystate instance;
+    private static QueryState instance;
 
     private WareContext context;
     private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
     private static final int EXIT            = 0;
-    private static final int ACCEPT_SHIPMENT = 4;
-    private static final int SHOW_CLIENTS    = 11;
-    private static final int SHOW_PRODUCTS   = 12;
-    private static final int SHOW_SUPPLIERS  = 13;
-    private static final int SHOW_ORDERS     = 14;
-    private static final int GET_TRANS       = 15;
-    private static final int GET_INVOICE     = 16;
-    private static final int MENU            = 18;
+    private static final int ACCEPT_SHIPMENT = 1;
+    private static final int SHOW_CLIENTS    = 2;
+    private static final int SHOW_PRODUCTS   = 3;
+    private static final int SHOW_SUPPLIERS  = 4;
+    private static final int SHOW_ORDERS     = 5;
+    private static final int GET_TRANS       = 6;
+    private static final int GET_INVOICE     = 7;
+    private static final int MENU            = 10;
 
-    private Querystate() {
+    private QueryState() {
         super();
         warehouse = Warehouse.instance();
     }
 
-    public static Querystate instance() {
+    public static QueryState instance() {
         if (instance == null) {
-            instance = new Querystate();
+            instance = new QueryState();
         }
         return instance;
     }
@@ -187,11 +187,11 @@ public class Querystate extends WareState {
     }
 
     public void logout() {
-        if ((WareContext.instance()).getLogin() == WareContext.isManager) {
-            (WareContext.instance()).changeState(3);
-        }
-        else if ((WareContext.instance()).getLogin() == WareContext.isClerk) {
+        if ((WareContext.instance()).getLogin() == WareContext.isClerk) {
             (WareContext.instance()).changeState(0);
+        }
+        else if ((WareContext.instance()).getLogin() == WareContext.isManager) {
+            (WareContext.instance()).changeState((WareContext.instance()).getLastState());
         }
     }
 

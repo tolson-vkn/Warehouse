@@ -60,6 +60,16 @@ public class Warehouse implements Serializable {
         return null;
     }
 
+    public Product adjustPrice(String productID, double newPrice) {
+        Product product = productList.search(productID);
+        if (product == null) {
+            return null;
+        }
+
+        product.setPrice(newPrice);
+        return product;
+    }
+
     // Assign a product to a supplier.
     public Product linkProduct(String supplierID, String productID) {
 
@@ -342,11 +352,19 @@ public class Warehouse implements Serializable {
         return orderList.getOrders();
     }
 
+    public Iterator getClientWaitlistOrders(String clientID) {
+        Client client = clientList.search(clientID);
+        if (client == null) {
+            return null;
+        }
+
+        return client.getWaitlistOrders();
+    }
+
     public Iterator getWaitlistOrders(String productID) {
         Product product = productList.search(productID);
         return product.getWaitlistOrders();
     }
-
 
     public Iterator getInvoices(String clientID) {
         Client client = clientList.search(clientID);

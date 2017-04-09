@@ -2,25 +2,25 @@ import java.util.*;
 import java.text.*;
 import java.io.*;
 
-public class Loginstate extends WareState {
+public class LoginState extends WareState {
     private static final int EXIT        = 0;
     private static final int CLERK_LOGIN = 1;
     private static final int USER_LOGIN  = 2;
     private static final int MGNR_LOGIN  = 3;
-    private static Loginstate instance;
+    private static LoginState instance;
 
     private WareContext context;
     private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
     public SecurityLayer sl = new SecurityLayer();
 
-    private Loginstate() {
+    private LoginState() {
         super();
     }
 
-    public static Loginstate instance() {
+    public static LoginState instance() {
         if (instance == null) {
-            instance = new Loginstate();
+            instance = new LoginState();
         }
         return instance;
     }
