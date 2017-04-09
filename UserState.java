@@ -234,7 +234,7 @@ public class UserState extends WareState {
 
     public void logout() {
         if ((WareContext.instance()).getLogin() == WareContext.isClerk) {
-            (WareContext.instance()).changeState(1);
+            (WareContext.instance()).changeState(0);
         }
         else if (WareContext.instance().getLogin() == WareContext.isUser) {
             (WareContext.instance()).changeState(0);
