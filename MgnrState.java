@@ -135,7 +135,7 @@ public class MgnrState extends WareState {
     }
 
     public void usermenu() {
-        String userID = getToken("Please input the user id: ");
+        String userID = getToken("Enter client user ID (e.g. C8)\n> ");
         if (Warehouse.instance().searchClient(userID) != null) {
             (WareContext.instance()).setUser(userID);
             (WareContext.instance()).changeState(1);
