@@ -2,9 +2,9 @@ import java.util.*;
 import java.text.*;
 import java.io.*;
 
-public class Mgnrstate extends WareState {
+public class MgnrState extends WareState {
     private static Warehouse warehouse;
-    private static Mgnrstate instance;
+    private static MgnrState instance;
 
     private WareContext context;
     private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -15,19 +15,19 @@ public class Mgnrstate extends WareState {
     private static final int USER_MODE       = 3;
     private static final int ADD_CLIENT      = 4;
     private static final int ADD_SUPPLIER    = 5;
-    private static final String ADJUST_PRICE = "Z";
-    private static final int MENU            = 18;
+    private static final int ADJUST_PRICE    = 6;
+    private static final int MENU            = 10;
 
     public SecurityLayer sl = new SecurityLayer();
 
-    private Mgnrstate() {
+    private MgnrState() {
         super();
         warehouse = Warehouse.instance();
     }
 
-    public static Mgnrstate instance() {
+    public static MgnrState instance() {
         if (instance == null) {
-            instance = new Mgnrstate();
+            instance = new MgnrState();
         }
         return instance;
     }
@@ -120,7 +120,7 @@ public class Mgnrstate extends WareState {
          + "       | " + USER_MODE      + ")\tEnter Client Mode             |\n"
          + "       | " + ADD_CLIENT     + ")\tAdd Client                    |\n"
          + "       | " + ADD_SUPPLIER   + ")\tAdd Supplier                  |\n"
-         + "       | " + ADJUST_PRICE   + ")\tAdjust Price (TODO)           |\n"
+         + "       | " + ADJUST_PRICE   + ")\tAdjust Price                  |\n"
          + "       | " + MENU           + ")\tDisplay Menu                  |\n"
          + "       | " + EXIT           + ")\tExit                          |\n"
          + "       +--------------------------------------+\n");
@@ -171,6 +171,27 @@ public class Mgnrstate extends WareState {
         System.out.println(result);
     }
 
+    public void adjustPrice() {
+        String productID = getToken("Enter product ID: ");
+        Product productObj;
+        Product result;
+        productObj = warehouse.searchProduct(productID);
+        if (productObj == null) {
+            System.out.println("Product does not exist.");
+            return;
+        }
+        System.out.println("Product [" + productObj.getProdName() + "] currently priced"
+                         + " at $" + productObj.getPrice());
+        Double newPrice = getDouble("New price: $");
+        result = warehouse.adjustPrice(productID, newPrice);
+        if (result == null) {
+            System.out.println("Could not adjust price.");
+        }
+        else {
+            System.out.println("Price adjusted!");
+        }
+    }
+
     public void logout() {
         if ((WareContext.instance()).getLogin() == WareContext.isManager) {
             (WareContext.instance()).changeState(2);
@@ -184,7 +205,7 @@ public class Mgnrstate extends WareState {
             return true;
         }
         else {
-            System.out.println("Invalid password.");
+            System.out.println("Invalid password. - logging out.");
             return false;
         }
     }
@@ -203,6 +224,8 @@ public class Mgnrstate extends WareState {
                 case ADD_CLIENT:    addClient();
                 break;
                 case ADD_SUPPLIER:  addSupplier();
+                break;
+                case ADJUST_PRICE:  adjustPrice();
                 break;
                 case MENU:          menu();
                 break;

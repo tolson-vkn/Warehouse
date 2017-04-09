@@ -65,6 +65,9 @@ public class Product implements Serializable {
         return waitlistOrders.iterator();
     }
 
+    public void setPrice(double newPrice) {
+        price = moneyRound(newPrice);
+    }
 
     public void setQuantity(int newQuantity) {
         quantity = newQuantity;

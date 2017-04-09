@@ -519,10 +519,7 @@ public class UserInterface {
     }
 
     public void test() {
-        // System.out.println("Could not get this working properly, please view logfile in finished folder.");
-        // String supplierID = getToken("Enter supplier ID: ");
-        // String productID = getToken("Enter product ID: ");
-        // System.out.println("Status: " + warehouse.isLinked(supplierID, productID));
+        // This does nothing right now...
     }
 
     // Switch case processing for menu.

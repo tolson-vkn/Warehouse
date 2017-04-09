@@ -88,11 +88,8 @@ public class Client implements Serializable {
         return (result.iterator());
     }
 
-    public void getWaitlistOrders() {
-        for (Iterator iterator = waitlistOrders.iterator(); iterator.hasNext(); ) {
-            Waitlist waitlist = (Waitlist) iterator.next();
-            System.out.println(waitlist);
-        }
+    public Iterator getWaitlistOrders() {
+        return waitlistOrders.iterator();
     }
 
     public void setName(String newName) {

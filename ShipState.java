@@ -2,9 +2,9 @@ import java.util.*;
 import java.text.*;
 import java.io.*;
 
-public class Shipstate extends WareState {
+public class ShipState extends WareState {
     private static Warehouse warehouse;
-    private static Shipstate instance;
+    private static ShipState instance;
 
     private WareContext context;
     private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -14,16 +14,16 @@ public class Shipstate extends WareState {
     private static final int ADD_PRODUCT      = 2;
     private static final int ASSIGN_PRODUCT   = 3;
     private static final int UNASSIGN_PRODUCT = 4;
-    private static final int MENU             = 18;
+    private static final int MENU             = 10;
 
-    private Shipstate() {
+    private ShipState() {
         super();
         warehouse = Warehouse.instance();
     }
 
-    public static Shipstate instance() {
+    public static ShipState instance() {
         if (instance == null) {
-            instance = new Shipstate();
+            instance = new ShipState();
         }
         return instance;
     }
@@ -245,17 +245,6 @@ public class Shipstate extends WareState {
                 break;
             }
         } while (true);
-    }
-
-    public void usermenu() {
-        String userID = getToken("Please input the user id: ");
-        if (Warehouse.instance().searchClient(userID) != null) {
-            (WareContext.instance()).setUser(userID);
-            (WareContext.instance()).changeState(1);
-        }
-        else {
-            System.out.println("Invalid user id.");
-        }
     }
 
     public void logout() {

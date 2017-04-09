@@ -2,31 +2,31 @@ import java.util.*;
 import java.text.*;
 import java.io.*;
 
-public class Userstate extends WareState {
-    private static Userstate userstate;
+public class ClerkState extends WareState {
     private static Warehouse warehouse;
+    private static ClerkState instance;
 
+    private WareContext context;
     private BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-    private static final int EXIT             = 0;
-    private static final int QUERY_MODE       = 4;
-    private static final int ACCEPT_ORDER     = 5;
-    private static final int PROCESS_ORDER    = 6;
-    private static final int CREATE_INVOICE   = 7;
-    private static final int PAYMENT          = 8;
-    private static final int MENU             = 18;
+    private static final int EXIT            = 0;
+    private static final int SHIPMENT_MODE   = 1;
+    private static final int QUERY_MODE      = 2;
+    private static final int USER_MODE       = 3;
+    private static final int PROCESS_ORDER   = 4;
+    private static final int CREATE_INVOICE  = 5;
+    private static final int MENU            = 10;
 
-    private Userstate() {
+    private ClerkState() {
+        super();
         warehouse = Warehouse.instance();
     }
 
-    public static Userstate instance() {
-        if (userstate == null) {
-            return userstate = new Userstate();
+    public static ClerkState instance() {
+        if (instance == null) {
+            instance = new ClerkState();
         }
-        else {
-            return userstate;
-        }
+        return instance;
     }
 
     // String prompt used to capture info.
@@ -102,70 +102,35 @@ public class Userstate extends WareState {
     public void menu() {
         System.out.println(
            "                 Warehouse System\n"
-         + "                      CLIENT\n\n"
+         + "                       CLERK\n\n"
          + "       +--------------------------------------+\n"
+         + "       | " + SHIPMENT_MODE    + ")\tEnter Shipment Mode           |\n"
          + "       | " + QUERY_MODE       + ")\tEnter Query Mode              |\n"
-         + "       | " + ACCEPT_ORDER     + ")\tAccept Order from Client      |\n"
+         + "       | " + USER_MODE        + ")\tEnter Client Mode             |\n"
          + "       | " + PROCESS_ORDER    + ")\tProcess Order                 |\n"
-         + "       | " + CREATE_INVOICE   + ")\tInvoice from processed Order  |\n"
-         + "       | " + PAYMENT          + ")\tMake a payment                |\n"
+         + "       | " + CREATE_INVOICE   + ")\tCreate Invoice                |\n"
          + "       | " + MENU             + ")\tDisplay Menu                  |\n"
          + "       | " + EXIT             + ")\tExit                          |\n"
          + "       +--------------------------------------+\n");
+    }
+
+    public void shipmentMode() {
+        (WareContext.instance()).changeState(4);
     }
 
     public void queryMode() {
         (WareContext.instance()).changeState(5);
     }
 
-    public void acceptOrder() {
-        Client clientObj;
-        Product productObj;
-        Order orderObj;
-        OrderItem orderItemOjb;
-
-        String clientID = getToken("Enter a client ID to start order: ");
-        clientObj = warehouse.searchClient(clientID);
-        if (clientObj == null) {
-            System.out.println("Client does not exist.");
-            return;
+    public void usermenu() {
+        String userID = getToken("Please input the user id: ");
+        if (Warehouse.instance().searchClient(userID) != null) {
+            (WareContext.instance()).setUser(userID);
+            (WareContext.instance()).changeState(1);
         }
-
-        orderObj = warehouse.createOrder(clientID);
-        if (orderObj == null) {
-            System.out.println("Could not initiate order.");
-            return;
+        else {
+            System.out.println("Invalid user id.");
         }
-
-        String orderID = orderObj.getID();
-
-        do {
-            String productID = getToken("Enter a product ID: ");
-            productObj = warehouse.searchProduct(productID);
-            if (productObj == null) {
-                System.out.println("Product does not exist.");
-                return;
-            }
-
-            int quantity = getInt("How many of the products to order?: ");
-
-            orderItemOjb = warehouse.addToOrder(orderID, productID, quantity);
-            if (orderItemOjb == null) {
-                System.out.println("Order could not be added.");
-            }
-            else {
-                System.out.println("Order added to queue!");
-                System.out.println("\t" + orderItemOjb);
-            }
-
-            if(yesOrNo("More products on this order?")) {
-                System.out.println();
-            }
-            else {
-                System.out.println("Order added!");
-                break;
-            }
-        } while (true);
     }
 
     public void processOrder() {
@@ -183,8 +148,7 @@ public class Userstate extends WareState {
             System.out.println("Order could not be processed, is waitlisted.");
         }
         else {
-            System.out.println("Order processed! Use option (" + CREATE_INVOICE
-                             + ") to make an invoice.");
+            System.out.println("Order processed!");
         }
     }
 
@@ -209,44 +173,8 @@ public class Userstate extends WareState {
         }
     }
 
-    public void payment() {
-        Client result;
-        String clientID = getToken("Enter a client ID to make a payment for: ");
-
-        result = warehouse.searchClient(clientID);
-        if (result == null) {
-            System.out.println("Client does not exist.");
-            return;
-        }
-
-        if (!warehouse.needsPayment(clientID)) {
-            System.out.println("Client does not need to make payment!");
-            return;
-        }
-
-        double clientPayment = getDouble("Enter amount to pay: ");
-        if (clientPayment < 0) {
-            System.out.println("Cannot mane negative paments.");
-            return;
-        }
-
-        result = warehouse.makePayment(clientID, clientPayment);
-        if (result == null) {
-            System.out.println("Payment could not be made.");
-        }
-        else {
-            System.out.println("Payment made, thank you!");
-        }
-    }
-
     public void logout() {
-        if ((WareContext.instance()).getLogin() == WareContext.isClerk) {
-            (WareContext.instance()).changeState(1);
-        }
-        else if (WareContext.instance().getLogin() == WareContext.isUser) {
-            (WareContext.instance()).changeState(0);
-        }
-        else if (WareContext.instance().getLogin() == WareContext.isManager) {
+        if ((WareContext.instance()).getLogin() == WareContext.isManager) {
             (WareContext.instance()).changeState(3);
         }
         else {
@@ -259,15 +187,15 @@ public class Userstate extends WareState {
         menu();
         while ((command = getCommand()) != EXIT) {
             switch (command) {
-                case QUERY_MODE:     queryMode();
+                case SHIPMENT_MODE:  shipmentMode();
                 break;
-                case ACCEPT_ORDER:   acceptOrder();
+                case USER_MODE:      usermenu();
+                break;
+                case QUERY_MODE:     queryMode();
                 break;
                 case PROCESS_ORDER:  processOrder();
                 break;
-                case CREATE_INVOICE: acceptOrder();
-                break;
-                case PAYMENT:        payment();
+                case CREATE_INVOICE: createInvoice();
                 break;
                 case MENU:           menu();
                 break;

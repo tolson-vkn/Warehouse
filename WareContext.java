@@ -98,6 +98,10 @@ public class WareContext {
         return currentUser;
     }
 
+    public int getLastState() {
+        return lastState;
+    }
+
     public void setUser(String uID) {
         userID = uID;
     }
@@ -107,31 +111,35 @@ public class WareContext {
     }
 
     private WareContext() {
+        System.out.print("\u001B[0m");
         if (yesOrNo("Look for saved data and use it?")) {
             retrieve();
         }
         else {
             warehouse = Warehouse.instance();
         }
-        states = new WareState[6];
-        states[0] = Clerkstate.instance();
-        states[1] = Userstate.instance();
-        states[2] = Loginstate.instance();
-        states[3] = Mgnrstate.instance();
-        states[4] = Shipstate.instance();
-        states[5] = Querystate.instance();
-        nextState = new int[6][6];
-        nextState[0][0] = 2;  nextState[0][1] = 1;  nextState[0][2] =  2; nextState[0][3] =  3;  nextState[0][4] = 4;  nextState[0][5] = 5;
-        nextState[1][0] = 2;  nextState[1][1] = 0;  nextState[1][2] = -2; nextState[1][3] =  3;  nextState[1][4] = -2; nextState[1][5] = 5;
-        nextState[2][0] = 0;  nextState[2][1] = 1;  nextState[2][2] = -1; nextState[2][3] =  3;  nextState[2][4] = -2; nextState[2][5] = -2;
-        nextState[3][0] = 0;  nextState[3][1] = 1;  nextState[3][2] =  2; nextState[3][3] = -2;  nextState[3][4] = 4;  nextState[3][5] = -2;
-        nextState[4][0] = 0;  nextState[4][1] = -2; nextState[4][2] = -2; nextState[4][3] =  3;  nextState[4][4] = -2; nextState[4][5] = -2;
-        nextState[5][0] = 0;  nextState[5][1] =  1; nextState[5][2] = -2; nextState[5][3] =  3;  nextState[5][4] = -2; nextState[5][5] = -2;
+        states = new WareState[7];
+        states[0] = ClerkState.instance();
+        states[1] = UserState.instance();
+        states[2] = LoginState.instance();
+        states[3] = MgnrState.instance();
+        states[4] = ShipState.instance();
+        states[5] = QueryState.instance();
+        states[6] = ClientOpsState.instance();
+        nextState = new int[7][7];
+        nextState[0][0] =  2; nextState[0][1] =  1; nextState[0][2] =  2; nextState[0][3] =  3; nextState[0][4] =  4; nextState[0][5] =  5; nextState[0][6] = -2;
+        nextState[1][0] =  2; nextState[1][1] =  1; nextState[1][2] = -2; nextState[1][3] =  3; nextState[1][4] = -2; nextState[1][5] =  5; nextState[1][6] =  6;
+        nextState[2][0] =  0; nextState[2][1] =  1; nextState[2][2] = -1; nextState[2][3] =  3; nextState[2][4] = -2; nextState[2][5] = -2; nextState[2][6] = -2;
+        nextState[3][0] =  0; nextState[3][1] =  1; nextState[3][2] =  2; nextState[3][3] = -2; nextState[3][4] =  4; nextState[3][5] = -2; nextState[3][6] = -2;
+        nextState[4][0] =  0; nextState[4][1] = -2; nextState[4][2] = -2; nextState[4][3] =  3; nextState[4][4] = -2; nextState[4][5] = -2; nextState[4][6] = -2;
+        nextState[5][0] =  0; nextState[5][1] =  1; nextState[5][2] = -2; nextState[5][3] =  3; nextState[5][4] = -2; nextState[5][5] = -2; nextState[5][6] = -2;
+        nextState[6][0] = -2; nextState[6][1] =  1; nextState[6][2] = -2; nextState[6][3] = -2; nextState[6][4] = -2; nextState[6][5] = -2; nextState[6][6] = -2;
         currentState = 2;
     }
 
     public void changeState(int transition) {
         // System.out.print("currentState [" + currentState + "] -> transition [" + transition + "]");
+        lastState = currentState;
         currentState = nextState[currentState][transition];
         // System.out.println(" = " + currentState);
         if (currentState == -2) {
