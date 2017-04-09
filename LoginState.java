@@ -84,7 +84,7 @@ public class LoginState extends WareState {
             (WareContext.instance()).changeState(0);
         }
         else {
-            System.out.println("Invalid password.");
+            System.out.println("Invalid password. - logging out.");
         }
     }
 
@@ -96,7 +96,7 @@ public class LoginState extends WareState {
             (WareContext.instance()).changeState(3);
         }
         else {
-            System.out.println("Invalid password.");
+            System.out.println("Invalid password. - logging out.");
         }
     }
 
